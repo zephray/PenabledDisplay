@@ -1,0 +1,25 @@
+{
+  "cmake.configureOnOpen": false,
+  "cmake.statusbar.advanced": {
+    "debug" : {
+      "visibility": "hidden"
+              },    "launch" : {
+      "visibility": "hidden"
+               },
+    "build" : {
+      "visibility": "hidden"
+               },
+    "buildTarget" : {
+      "visibility": "hidden"
+               },
+    },
+    "files.associations": {
+      "lcd.h": "c",
+      "tcpm_driver.h": "c",
+      "usb_pd.h": "c",
+      "tcpm.h": "c",
+      "fusb302.h": "c",
+      "time.h": "c",
+      "syslog.h": "c"
+    },
+}
