@@ -75,6 +75,8 @@ static void _lcd_set_pixel(size_t x, size_t y, uint16_t c) {
 }
 
 void ui_disp_char(int x, int y, char c, uint16_t cl) {
+    if (c < 0x20)
+        return;
     c -= 0x20;
     for (int yy = 0; yy < 7; yy++) {
         if ((y + yy) < 0) continue;
@@ -110,7 +112,7 @@ void ui_disp_string(int x, int y, char *str, uint16_t c) {
     while (*str) {
         ui_disp_char(x, y, *str++, c);
         x += 6;
-        if ((x + 6) > LCD_WIDTH) {
+        if ((x + 6) > UI_WIDTH) {
             y += 8;
             x = 0;
         }

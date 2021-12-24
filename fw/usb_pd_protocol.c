@@ -846,6 +846,7 @@ static void handle_vdm_request(int port, int cnt, uint32_t *payload)
 	int rlen = 0;
 	uint32_t *rdata;
 
+	CPRINTF("VDM request");
 	if (pd[port].vdm_state == VDM_STATE_BUSY) {
 		/* If UFP responded busy retry after timeout */
 		if (PD_VDO_CMDT(payload[0]) == CMDT_RSP_BUSY) {
@@ -1632,6 +1633,12 @@ static void pd_vdm_send_state_machine(int port)
 {
 	int res;
 	uint16_t header;
+
+	/*static int old_vdm_state = 0;
+	if (pd[port].vdm_state != old_vdm_state) {
+		CPRINTF("VDM state: %d\n", pd[port].vdm_state);
+		old_vdm_state = pd[port].vdm_state;
+	}*/
 
 	switch (pd[port].vdm_state) {
 	case VDM_STATE_READY:
@@ -3574,30 +3581,6 @@ static int remote_flashing(int argc, char **argv)
 }
 #endif /* defined(CONFIG_CMD_PD) && defined(CONFIG_CMD_PD_FLASH) */
 
-#if defined(CONFIG_USB_PD_ALT_MODE) && !defined(CONFIG_USB_PD_ALT_MODE_DFP)
-void pd_send_hpd(int port, enum hpd_event hpd)
-{
-	uint32_t data[1];
-	int opos = pd_alt_mode(port, USB_SID_DISPLAYPORT);
-	if (!opos)
-		return;
-
-	data[0] = VDO_DP_STATUS((hpd == hpd_irq),  /* IRQ_HPD */
-				(hpd != hpd_low),  /* HPD_HI|LOW */
-				0,		      /* request exit DP */
-				0,		      /* request exit USB */
-				0,		      /* MF pref */
-				1,                    /* enabled */
-				0,		      /* power low */
-				0x2);
-	pd_send_vdm(port, USB_SID_DISPLAYPORT,
-		    VDO_OPOS(opos) | CMD_ATTENTION, data, 1);
-	/* Wait until VDM is done. */
-	while (pd[0].vdm_state > 0)
-		task_wait_event(USB_PD_RX_TMOUT_US * (PD_RETRY_COUNT + 1));
-}
-#endif
-
 int pd_fetch_acc_log_entry(int port)
 {
 	timestamp_t timeout;
@@ -4264,3 +4247,32 @@ DECLARE_HOST_COMMAND(EC_CMD_PD_CONTROL, pd_control, EC_VER_MASK(0));
 #endif /* CONFIG_CMD_PD_CONTROL */
 
 #endif /* CONFIG_COMMON_RUNTIME */
+
+#if defined(CONFIG_USB_PD_ALT_MODE) && !defined(CONFIG_USB_PD_ALT_MODE_DFP)
+void pd_send_hpd(int port, enum hpd_event hpd)
+{
+	uint32_t data[1];
+	int opos = pd_alt_mode(port, USB_SID_DISPLAYPORT);
+	if (!opos)
+		return;
+
+	data[0] = VDO_DP_STATUS((hpd == hpd_irq),  /* IRQ_HPD */
+				(hpd != hpd_low),  /* HPD_HI|LOW */
+				0,		      /* request exit DP */
+				0,		      /* request exit USB */
+				0,		      /* MF pref */
+				1,                    /* enabled */
+				0,		      /* power low */
+				0x2);
+	pd_send_vdm(port, USB_SID_DISPLAYPORT,
+		    VDO_OPOS(opos) | CMD_ATTENTION, data, 1);
+	/* Wait until VDM is done. */
+	//while (pd[0].vdm_state > 0)
+	//	task_wait_event(USB_PD_RX_TMOUT_US * (PD_RETRY_COUNT + 1));
+}
+
+bool pd_is_vdm_busy(int port)
+{
+	return ((pd[port].vdm_state != 0) && (pd[port].vdm_state != -1));
+}
+#endif

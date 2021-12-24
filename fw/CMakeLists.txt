@@ -25,6 +25,7 @@ add_executable(fw
         ui.c
         utils.c
         fusb302.c
+        ptn3460.c
         syslog.c
         tcpm_driver.c
         usb_pd_driver.c

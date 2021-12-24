@@ -19,6 +19,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
+#include "pico/stdlib.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -40,13 +41,18 @@ static msg_t *viewable_first;
 static int offset;
 static int count;
 
+static bool dirty;
+
 void syslog_init(void) {
     head = NULL;
     tail = NULL;
     count = 0;
+    dirty = true;
 }
 
 void syslog_disp(void) {
+    if (!dirty)
+        return;
     ui_clear(0x0000);
     ui_disp_string(0, 0, "System log", 0xffff);
     
@@ -57,9 +63,10 @@ void syslog_disp(void) {
         y -= h;
         if (y >= 8)
             ui_disp_string(0, y, msg->text, 0xffff);
-        msg = msg->next;
+        msg = msg->prev;
     }
     lcd_update();
+    dirty = false;
 }
 
 static void syslog_add_to_tail(msg_t *msg) {
@@ -69,9 +76,9 @@ static void syslog_add_to_tail(msg_t *msg) {
     }
     else {
         head = msg;
-        viewable_first = msg;
     }
     tail = msg;
+    viewable_first = msg;
     count++;
 }
 
@@ -87,7 +94,11 @@ static void syslog_del_from_head(void) {
 }
 
 int syslog_printf(const char *format, ...) {
+    char time_buffer[24];
     char printf_buffer[SYSLOG_PRINTF_BUFFER_SIZE];
+
+    uint64_t time = get_absolute_time();
+    int time_length = snprintf(time_buffer, 24, "[%d]", (uint32_t)time / 1000);
 
     int length = 0;
 
@@ -98,14 +109,16 @@ int syslog_printf(const char *format, ...) {
 
     va_end(ap);
 
-    msg_t *msg = malloc(sizeof(msg_t) + length + 1);
-    memcpy(msg->text, printf_buffer, length + 1);
+    msg_t *msg = malloc(sizeof(msg_t) + time_length + length + 1);
+    memcpy(msg->text, time_buffer, time_length);
+    memcpy(msg->text + time_length, printf_buffer, length + 1);
     msg->next = NULL;
     msg->prev = NULL;
 
     if (count >= SYSLOG_MAX_LINES)
         syslog_del_from_head();
     syslog_add_to_tail(msg);
+    dirty = true;
 
     return length;
 }

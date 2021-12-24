@@ -35,12 +35,19 @@ extern "C" {
 //#define CONFIG_CHARGE_MANAGER
 //#define CONFIG_USBC_BACKWARDS_COMPATIBLE_DFP
 //#define CONFIG_USBC_VCONN_SWAP
-//#define CONFIG_USB_PD_ALT_MODE
+#define CONFIG_USB_PD_ALT_MODE
 //#define CONFIG_USB_PD_CHROMEOS
-//#define CONFIG_USB_PD_DUAL_ROLE
+#define CONFIG_USB_PD_DUAL_ROLE
 //#define CONFIG_USB_PD_GIVE_BACK
 //#define CONFIG_USB_PD_SIMPLE_DFP
 //#define CONFIG_USB_PD_TCPM_TCPCI
+
+/* USB configuration */
+#define CONFIG_USB_PID 0x500c
+#define CONFIG_USB_BCD_DEV 0x0001 /* v 0.01 */
+
+#define CONFIG_USB_PD_IDENTITY_HW_VERS 1
+#define CONFIG_USB_PD_IDENTITY_SW_VERS 1
 
 /* Default pull-up value on the USB-C ports when they are used as source. */
 #define CONFIG_USB_PD_PULLUP TYPEC_RP_USB

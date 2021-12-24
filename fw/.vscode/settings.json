@@ -20,6 +20,10 @@
       "tcpm.h": "c",
       "fusb302.h": "c",
       "time.h": "c",
-      "syslog.h": "c"
+      "syslog.h": "c",
+      "functional": "c",
+      "edid.h": "c",
+      "stdio.h": "c",
+      "stdlib.h": "c"
     },
 }
